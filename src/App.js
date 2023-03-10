@@ -65,7 +65,7 @@ const App = () => {
 
   const handleResizeStart = (index, e) => {
     // Check if the resize is coming from the left handle
-    const [handlePosX, handlePosY] = e.direction;
+    const [handlePosX] = e.direction;
     // 0 => center
     // -1 => top or left
     // 1 => bottom or right
@@ -76,8 +76,8 @@ const App = () => {
     if (handlePosX === -1) {
       console.log("width", moveableComponents, e);
       // Save the initial left and width values of the moveable component
-      const initialLeft = e.left;
-      const initialWidth = e.width;
+      // const initialLeft = e.left;
+      // const initialWidth = e.width;
 
       // Set up the onResize event handler to update the left value based on the change in width
     }
@@ -236,13 +236,14 @@ const Component = ({
       const { renderPoses } = moveable.state;
 
       return (
-        <img onClick={() => { removeMoveableComponent() }} src="https://cdn-icons-png.flaticon.com/512/3687/3687412.png" style={{
+        <img alt={`delete`} onClick={() => { removeMoveableComponent() }} src="https://cdn-icons-png.flaticon.com/512/3687/3687412.png" style={{
           width: 20, height: 20,
           cursor: "pointer",
           position: "absolute",
           transform: `translate(-50%, -50%) translate(${renderPoses[1][0]}px, ${renderPoses[1][1]
             }px) translateZ(-50px)`,
           zIndex: 100
+        
         }}>
         </img>
 
@@ -265,7 +266,7 @@ const Component = ({
         }}
         onClick={() => setSelected(id)}
       >
-        <img key={index} src={image} style={{ objectFit: Math.floor(Math.random() * objectFills.length), width: "100%", height: "100%" }} />
+        <img key={index} src={image} style={{ objectFit: Math.floor(Math.random() * objectFills.length), width: "100%", height: "100%" }} alt={`background`}/>
       </div>
       <Moveable
         target={isSelected && ref.current}
