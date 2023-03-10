@@ -19,14 +19,6 @@ const App = () => {
     getImageRandom();
   }, [])
 
-  //   const removeImageAvailableByIndex = (indexFrom)=> {
-  //     setImagesAvailable(imagesAvailable.filter(function(image, index) { 
-
-  //       console.log(index)
-  //       return index !== indexFrom
-  //   }));
-  // }
-
   const removeImageAvailableByIndex = (index) => {
     setImagesAvailable([
       ...imagesAvailable.slice(0, index),
@@ -45,7 +37,7 @@ const App = () => {
         left: 0,
         width: 100,
         height: 100,
-        color: imagesAvailable[index]?.url,
+        image: imagesAvailable[index]?.url,
         updateEnd: true
       },
     ]);
@@ -64,14 +56,14 @@ const App = () => {
   };
 
   const removeMoveableComponent = () => {
-    setSelected(null)
     setMoveableComponents(moveableComponents.filter(function (component) {
       return component.id !== selected
     }));
+    setSelected(null)
+
   }
 
   const handleResizeStart = (index, e) => {
-    console.log("e", e.direction);
     // Check if the resize is coming from the left handle
     const [handlePosX, handlePosY] = e.direction;
     // 0 => center
@@ -130,7 +122,7 @@ const Component = ({
   width,
   height,
   index,
-  color,
+  image,
   id,
   setSelected,
   isSelected = false,
@@ -139,13 +131,15 @@ const Component = ({
 }) => {
   const ref = useRef();
 
+  const objectFills = ["cover", "fill", "contain", "scale-down", "none"]
+
   const [nodoReferencia, setNodoReferencia] = useState({
     top,
     left,
     width,
     height,
     index,
-    color,
+    image,
     id,
   });
 
@@ -154,6 +148,7 @@ const Component = ({
 
   const onResize = async (e) => {
     // ACTUALIZAR ALTO Y ANCHO
+
     let newWidth = e.width;
     let newHeight = e.height;
 
@@ -165,14 +160,14 @@ const Component = ({
     if (positionMaxLeft > parentBounds?.width)
       newWidth = parentBounds?.width - left;
 
+
     updateMoveable(id, {
       top,
       left,
       width: newWidth,
       height: newHeight,
-      color,
+      image,
     });
-
     // ACTUALIZAR NODO REFERENCIA
     const beforeTranslate = e.drag.beforeTranslate;
 
@@ -203,14 +198,23 @@ const Component = ({
     if (positionMaxTop > parentBounds?.height)
       newHeight = parentBounds?.height - top;
     if (positionMaxLeft > parentBounds?.width)
-      newWidth = parentBounds?.width - left;
+      newWidth = parentBounds?.width ;
+
 
     const { lastEvent } = e;
     const { drag } = lastEvent;
     const { beforeTranslate } = drag;
 
-    const absoluteTop = top + beforeTranslate[1];
-    const absoluteLeft = left + beforeTranslate[0];
+    let absoluteTop = top + beforeTranslate[1];
+    let absoluteLeft = left + beforeTranslate[0] ;
+    
+    if(nodoReferencia.translateX < 0){
+      absoluteLeft = absoluteLeft - nodoReferencia.translateX;
+    }
+
+    if(nodoReferencia.translateY < 0){
+      absoluteTop= absoluteTop - nodoReferencia.translateY;
+    }
 
     updateMoveable(
       id,
@@ -219,13 +223,14 @@ const Component = ({
         left: absoluteLeft,
         width: newWidth,
         height: newHeight,
-        color,
+        image,
       },
       true
     );
   };
 
-  const customAble = {
+
+  const deleteCustom = {
     name: "tooltool",
     render(moveable) {
       const { renderPoses } = moveable.state;
@@ -260,37 +265,27 @@ const Component = ({
         }}
         onClick={() => setSelected(id)}
       >
-        <img src={color} style={{ objectFit: "cover", width: "100%", height: "100%" }} />
+        <img key={index} src={image} style={{ objectFit: Math.floor(Math.random() * objectFills.length), width: "100%", height: "100%" }} />
       </div>
       <Moveable
         target={isSelected && ref.current}
         resizable
         draggable
         onDrag={(e) => {
-          var boun = parent.offsetWidth - ref.current.offsetWidth;
-          var bounY = parent.offsetHeight - ref.current.offsetHeight;
-
-          var posX = e.clientX;
-          var posY = e.clientY;
-
-          var diffX = posX - left;
-          var diffY = posY - top;
-
-          var aX = posX - diffX;
-          var aY = posY - diffY
-
-          console.log("aX: " + aX + " aY: " + aY)
-          console.log("boundX: " + boun + " boundY: " + bounY)
-          if ((aX < boun && aY >= 0 && aX >= 0 && aY < bounY)) {
+          let bounX = parent.offsetWidth - ref.current.offsetWidth;
+          let bounY = parent.offsetHeight - ref.current.offsetHeight;
+          console.log(bounX)
+          if ((e.left < bounX && e.left > 0 && e.top > 0 && e.top < bounY)) {
             updateMoveable(id, {
               top: e.top,
               left: e.left,
               width,
               height,
-              color,
+              image,
             });
           }
-        }}
+        }
+        }
         onResize={onResize}
         onResizeEnd={onResizeEnd}
         keepRatio={false}
@@ -300,8 +295,8 @@ const Component = ({
         zoom={1}
         origin={false}
         padding={{ left: 0, top: 0, right: 0, bottom: 0 }}
-
-        ables={[customAble]}
+        onDragEnd={()=>{console.log(width)}}
+        ables={[deleteCustom]}
         tooltool={true}
       />
     </>
